@@ -85,7 +85,7 @@ async def _():
 
 @opendian.handle()
 async def _(session: Uninfo, dz: Match[int | str]):
-    msg = dz.result if dz.available else None
+    msg = str(dz.result) if dz.available else None
     uid = session.user.id
     group = session.scene.id
     if group in MATCH_LIST:
@@ -96,7 +96,7 @@ async def _(session: Uninfo, dz: Match[int | str]):
             reply_to=True
         )
     if msg:
-        if isinstance(msg, int) and msg > 0:
+        if msg.isdigit() and int(msg) > 0:
             cost = int(msg)
             if cost > 10000000:
                 await UniMessage(f"{NICKNAME}不接受10，000，000以上的赌注哦").finish(
@@ -123,7 +123,7 @@ async def _(session: Uninfo, dz: Match[int | str]):
 
 @ruchang.handle()
 async def _(session: Uninfo, dz: Match[int | str]):
-    msg = dz.result if dz.available else None
+    msg = str(dz.result) if dz.available else None
     uid = session.user.id
     group = session.scene.id
     player_name = await get_username(uid, session)
@@ -137,7 +137,7 @@ async def _(session: Uninfo, dz: Match[int | str]):
     if match_obj.get_player(uid):
         await UniMessage(f"你已入场，请勿重复操作\n{msga}").finish(reply_to=True)
     if msg:
-        if isinstance(msg, int) and msg > 0:
+        if msg.isdigit() and int(msg) > 0:
             cost = int(msg)
             if cost > 10000000:
                 await UniMessage(f"{NICKNAME}不接受10，000，000以上的赌注哦").finish(
