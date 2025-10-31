@@ -300,8 +300,8 @@ async def _(session: Uninfo):
     player = match_obj.get_player(uid)
     if not player:
         await UniMessage("你没有入场，不能进行此操作!").finish(reply_to=True)
-    if match_obj.last_update - time.time() < 90:
-        await UniMessage("对局没有超时 90s , 不能结束!").finish(reply_to=True)
+    if time.time() - match_obj.time  < 90:
+        await UniMessage("对局没有进行 90s , 不能结束!").finish(reply_to=True)
     if not player.end:
         player.end = True
         match_obj.endnum += 1

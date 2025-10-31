@@ -2,7 +2,6 @@ from enum import Enum
 import random
 import re
 import time
-from typing import Any
 
 from nonebot import get_bot
 from nonebot_plugin_uninfo import Uninfo
@@ -66,8 +65,6 @@ class Player(BaseModel):
 class MatchDetail(BaseModel):
     """对局信息"""
 
-    last_update: float = time.time()
-    """最后一次更新时间"""
     time: float = time.time()
     """对局开始时间"""
     start: bool = False
@@ -86,11 +83,6 @@ class MatchDetail(BaseModel):
     """当前牌组"""
     players: list[Player] = []
     """玩家列表"""
-
-    def __setattr__(self, name: str, value: Any):
-        super().__setattr__(name, value)
-        # 每次属性被设置时更新 last_update
-        super().__setattr__("last_update", time.time())
 
     def get_player(self, uid: str) -> Player | None:
         """获取玩家"""
