@@ -16,7 +16,8 @@ from nonebot_plugin_htmlrender import text_to_pic
 from nonebot_plugin_uninfo import Uninfo
 
 from zhenxun.configs.utils.models import PluginExtraData
-from zhenxun.models.bag_user import BagUser
+from zhenxun.models.user_console import UserConsole
+from zhenxun.utils.enum import GoldHandle
 from zhenxun.utils.rules import ensure_group
 
 from .cons import MATCH_LIST, NICKNAME, Card, MatchDetail, Player, get_username
@@ -110,10 +111,10 @@ async def _(session: Uninfo, dz: Match[int | str]):
             await UniMessage("赌注是数字啊喂").finish(reply_to=True)
     else:
         await UniMessage("请输入你的赌注").finish(reply_to=True)
-    if await BagUser.get_gold(uid, group) < cost:
-        await UniMessage(
-            f"金币不够还想来21点？\n你的金币余额为{await BagUser.get_gold(uid, group)}"
-        ).finish(
+    user = await UserConsole.get_user(uid)
+    assert user
+    if user.gold < cost:
+        await UniMessage(f"金币不够还想来21点？\n你的金币余额为{user.gold}").finish(
             reply_to=True,
         )
     MATCH_LIST[group] = MatchDetail()
@@ -153,10 +154,10 @@ async def _(session: Uninfo, dz: Match[int | str]):
         await UniMessage("请输入你的赌注").finish(reply_to=True)
     if cost < (match_obj.players[0].cost / 2):
         await UniMessage("赌注不得小于开局玩家的1/2").finish(reply_to=True)
-    if await BagUser.get_gold(uid, group) < cost:
-        await UniMessage(
-            f"金币不够还想来21点？\n你的金币余额为{await BagUser.get_gold(uid, group)}"
-        ).finish(
+    user = await UserConsole.get_user(uid)
+    assert user
+    if user.gold < cost:
+        await UniMessage(f"金币不够还想来21点？\n你的金币余额为{user.gold}").finish(
             reply_to=True,
         )
     await ruchangx(group, uid, player_name, cost)
@@ -318,7 +319,7 @@ async def ruchangx(group: str, uid: str, player_name: str, cost: int):
     match_obj.playnum += 1
     match_obj.players.append(Player(cost=cost, playeruid=uid, player=player_name))
     match_obj.costall += cost
-    await BagUser.spend_gold(uid, group, cost)
+    await UserConsole.reduce_gold(uid, cost, GoldHandle.PLUGIN, "21_points")
 
 
 async def end(group: str):
@@ -342,14 +343,14 @@ async def end(group: str):
     winer = 0
     key = 0
     winall = 0
-    max = match_obj.playnum
+    max_player = match_obj.playnum
     i = 0
-    while i <= max:
+    while i <= max_player:
         if match_obj.players[i].sum > key and match_obj.players[i].sum < 22:
             key = match_obj.players[i].sum
         i += 1
     i = 0
-    while i <= max:
+    while i <= max_player:
         if match_obj.players[i].sum == key:
             winall += match_obj.players[i].cost
             winer += 1
@@ -357,12 +358,12 @@ async def end(group: str):
     if winer == 0:
         out += "无人生还，金币返还\n"
         i = 1
-        while i <= max:
+        while i <= max_player:
             gold = match_obj.players[i].cost
             await wingold(group, i, gold)
             i += 1
     i = 0
-    while i <= max:
+    while i <= max_player:
         if match_obj.players[i].sum == key:
             gold = int(match_obj.players[i].cost / winall * match_obj.costall)
             await wingold(group, i, gold)
@@ -376,7 +377,7 @@ async def end(group: str):
 async def wingold(group: str, i: int, gold: int):
     if i > 0:
         uid = MATCH_LIST[group].players[i].playeruid
-        await BagUser.add_gold(uid, group, gold)
+        await UserConsole.add_gold(uid, gold, "21_points")
 
 
 def msgout(group: str) -> str:
