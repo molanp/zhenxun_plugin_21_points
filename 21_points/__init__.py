@@ -23,7 +23,7 @@ from zhenxun.utils.rules import ensure_group
 from .cons import MATCH_LIST, NICKNAME, Card, MatchDetail, Player, get_username
 
 __plugin_meta__ = PluginMetadata(
-    name="21点",
+    name="21点青春版",
     description="21点青春版，让金币再次焕发光辉",
     usage=f"""
     21点帮助 : 获取帮助
@@ -41,7 +41,7 @@ __plugin_meta__ = PluginMetadata(
     获胜奖励为胜者按各自入场费，均分其他人金币
     """,
     extra=PluginExtraData(
-        author="冥乐",
+        author="冥乐&小依",
         version="2.0",
         menu_type=f"{NICKNAME}赌场",
         superuser_help="数据显示: 查看全部群聊21点数据\n数据清空: 清理本群",
